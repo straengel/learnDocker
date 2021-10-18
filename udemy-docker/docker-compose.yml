@@ -5,8 +5,8 @@ services:
     build: ./frontend
     container_name: udemy-docker-front
     command: serve -s build -l 3000
-    ports:
-      - "3000:3000"
+#    ports:
+#      - "3000:3000"
 #    restart: unless-stopped
 #    stdin_open: true
 #    tty: true
@@ -24,8 +24,11 @@ services:
       - PORT=3001
       - HOST=http://rworld.com
       - MONGO_URL=mongodb://api_db:27017/api
+      - AUTH_API_URL=http://auth:3002/api
     depends_on:
       - api_db
+    networks:
+      - udemy-docker-network
 
   auth:
     build: ./auth
@@ -38,20 +41,27 @@ services:
       - PORT=3002
       - HOST=http://rworld.com
       - MONGO_URL=mongodb://auth_db:27017/auth
+      - API_URL=http://api:3001/api
     depends_on:
       - auth_db
+    networks:
+      - udemy-docker-network
 
   api_db:
     image: mongo:latest
     container_name: udemy-docker-db
     volumes:
       - mongodb_api:/data/db
+    networks:
+      - udemy-docker-network
 
   auth_db:
     image: mongo:latest
     container_name: udemy-docker-auth-db
     volumes:
       - mongodb_auth:/data/db
+    networks:
+      - udemy-docker-network
 
   nginx:
     image: nginx:stable-alpine
@@ -60,7 +70,15 @@ services:
       - "80:80"
     volumes:
       - ./nginx/nginx.conf.prod:/etc/nginx/conf.d/nginx.conf
+    depends_on:
+      - front
+    networks:
+      - udemy-docker-network
 
 volumes:
   mongodb_api:
   mongodb_auth:
+
+networks:
+  udemy-docker-network:
+    driver: bridge

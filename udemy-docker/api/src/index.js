@@ -3,7 +3,8 @@ const app = express();
 const mongoose = require("mongoose");
 // const port = process.env.PORT;
 // const host = process.env.HOST;
-const {host, port, db} = require("./configuration");
+const {host, port, db, authApiUrl} = require("./configuration");
+const axios = require("axios")
 const {connectDb} = require("./helper/db");
 const postSchema = new mongoose.Schema({
     name: String
@@ -26,12 +27,30 @@ const startServer = () => {
             if(err) return console.error(err);
             console.log('savedSilence!', savedSilence);
         })
+        console.log('authApiUrl', authApiUrl)
     });
 }
 
-console.log('PORT', port)
 app.get('/test', (req, res) => {
-    res.send('Our api server');
+    res.send('Our api server and authApiUrl = ' +authApiUrl);
+});
+
+app.get('/api/testapidata', (req, res) =>{
+    res.json({
+        testwithapi: true
+    })
+})
+
+app.get('/testwithcurrenuser', (req, res) => {
+    // console.log('authApiUrl', authApiUrl)
+    axios.get(authApiUrl + '/currentUser')
+        .then(response => {
+            res.json({
+                testwithcurrenuser: true,
+                currentUserFromAuth: response.data
+            })
+        })
+
 });
 
 

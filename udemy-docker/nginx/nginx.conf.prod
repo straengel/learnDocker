@@ -1,0 +1,12 @@
+server {
+    listen 80;
+
+    server_name udemy-straengel.ru;
+
+    location / {
+        proxy_pass http://front:3000;
+    }
+    location /api {
+        proxy_pass http://front:3000;
+    }
+}
