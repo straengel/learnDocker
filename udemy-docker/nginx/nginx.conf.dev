@@ -1,10 +1,14 @@
 server {
     listen 80;
 
-    server_name udemy-straengel.ru;
+    server_name udemy-straengel.local;
 
     location / {
         proxy_pass http://front:3000;
+        #Needed for scokets
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
     }
 
     location /api {

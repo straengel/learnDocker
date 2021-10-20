@@ -2,9 +2,15 @@ version: '3'
 
 services:
   front:
-    build: ./frontend
+#    build: ./frontend - по умолчанию забирается Dockerfile
+#    Теперь явно указываем какой докер файл надо забирать
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
     container_name: udemy-docker-front
     command: serve -s build -l 3000
+    networks:
+      - udemy-docker-network
 #    ports:
 #      - "3000:3000"
 #    restart: unless-stopped
@@ -18,11 +24,11 @@ services:
     container_name: udemy-docker-api
     command: npm run start
     restart: unless-stopped
-    ports:
-      - "3001:3001"
+#    ports:
+#      - "3001:3001"
     environment:
       - PORT=3001
-      - HOST=http://rworld.com
+#      - HOST=http://rworld.com
       - MONGO_URL=mongodb://api_db:27017/api
       - AUTH_API_URL=http://auth:3002/api
     depends_on:
@@ -35,11 +41,11 @@ services:
     container_name: udemy-docker-auth
     command: npm run start
     restart: unless-stopped
-    ports:
-      - "3002:3002"
+#    ports:
+#      - "3002:3002"
     environment:
       - PORT=3002
-      - HOST=http://rworld.com
+#      - HOST=http://rworld.com нужен для редиректа
       - MONGO_URL=mongodb://auth_db:27017/auth
       - API_URL=http://api:3001/api
     depends_on:
@@ -72,6 +78,8 @@ services:
       - ./nginx/nginx.conf.prod:/etc/nginx/conf.d/nginx.conf
     depends_on:
       - front
+      - api
+      - auth
     networks:
       - udemy-docker-network
 
