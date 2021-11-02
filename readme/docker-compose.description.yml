@@ -1,0 +1,94 @@
+#версионирование docker-compose и то, какие поля можно использовать
+version: '3'
+#то какие сервисы мы создаем сервер, база, язк
+services:
+  #произвольное название сервиса
+  nuxt:
+    #какой докер файл подключать и из какой папки
+    build:
+      #в какой папке мы будем находиться (корневая папка)
+      context: ./nuxt
+      #Какой докер файл запускать
+      dockerfile: Dockerfile
+    #Как будет называться контейнер, это нужно для того чтобы проще определять ид контейнера
+    container_name: dln-nuxt
+    #перезапуск контейнера
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    volumes:
+      - './app/node_modules/'
+      - './nuxt:/app'
+    #запуск команды докер контейнера можно прописать в Dockerfile CMD и она может быть одна
+    command: [ "npm", "run", "dev" ]
+    #порты - первый говорит в каком порту выводить наружу, а второй какой порт характерен внутри докера
+    ports:
+      - '3000:3000'
+    #окружение
+    environment:
+      #разрешения на отслеживание изменений
+      - CHOKIDAR_USEPOLLING=true
+
+    # в каких сетях работает данный сервис
+    networks:
+      - docker-laravel-nuxt
+
+  laravel:
+    build:
+      context: ./laravel
+      dockerfile: Dockerfile
+    container_name: dln-laravel
+    #рабочая директория по умолчанию можно описать в Dockerfile
+    working_dir: /var/www/laravel
+    restart: unless-stopped
+    volumes:
+      #Монтируем папку в докер контейнер и куда
+      - ./laravel:/var/www/laravel
+    #Какие сервисы нужны для запуска данного контейнера, чтобы не было ошибок
+    depends_on:
+      - maria_db
+    networks:
+      - docker-laravel-nuxt
+
+  maria_db:
+    #Готовый образ для использования, для него не нужен Dockerfile
+    image: mariadb:10
+    #Нужен для мас, данные инструкции нужны по мере необходимости в зависимости от оси,
+    platform: linux/x86_64
+    container_name: dln-maria-db
+    restart: unless-stopped
+    ports:
+      - 3306:3306
+    #какие переменные мы задаем для базы данных
+    environment:
+      MYSQL_DATABASE: admin
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      #сохраняем базу данных, чтобы не потерялась и обратно возвращаем когда происходят записи
+      - ./laravel/storage/dbdata:/var/lib/mysql
+    networks:
+      - docker-laravel-nuxt
+
+  nginx:
+    image: nginx:1.20-alpine
+    container_name: dln-nginx
+    restart: unless-stopped
+    tty: true
+    depends_on:
+      - laravel
+      - maria_db
+      - nuxt
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./:/var/www
+      - ./nginx/nginx.conf.test:/etc/nginx/conf.d/nginx.conf
+    networks:
+      - docker-laravel-nuxt
+
+networks:
+  docker-laravel-nuxt:
+    driver: bridge
