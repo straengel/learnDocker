@@ -57,7 +57,7 @@
 сервиса контекст, который показывает из какой папке будет выполняться копирование. Так например - 
 context: . указывает на копию из текущей папки, в которой находиться сам файл docker-compose.yml, а
   context: ./readme будет говорить, что скачивать надо из папки readme
-- С поддоменами полная беда, пока не знаю как решить, http://project.local/api/hi http://project.local работают
+- http://project.local/api/hi http://project.local работают
 - https://github.com/nevadskiy/laravel-nuxt-docker - интересный репозиторий
 - https://titanwolf.org/Network/Articles/Article?AID=a4ef5ad1-fdb4-47ca-8414-3766a6f4e224 - как еще можно организовать структуру
 - для alpine необходимо использовать apk update (вместое apt-get update) && apk add (вместо apt-get install)
