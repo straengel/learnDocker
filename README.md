@@ -160,3 +160,5 @@ Do not run Composer as root/super user! See https://getcomposer.org/root for det
 - То:
   Чтобы composer не ругался на root/super user, нужно установить переменную окружения
   ENV COMPOSER_ALLOW_SUPERUSER 1
+---
+- Вот отличная документация по любым конфигам докера - https://github.com/compose-spec/compose-spec/blob/master/spec.md
